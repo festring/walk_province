@@ -36,8 +36,8 @@ class MapSampleState extends State<MapSample> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Google Maps Example'),
-        backgroundColor: Colors.green[700],
+        title: const Text('검색창 들어갈 곳'),
+        backgroundColor: const Color.fromARGB(255, 201, 239, 203),
       ),
       body: GoogleMap(
         onMapCreated: _onMapCreated,
