@@ -87,6 +87,7 @@ class MapSampleState extends State<MapSample> {
             },
             myLocationEnabled: true,
             myLocationButtonEnabled: false, // 기본 위치 버튼 비활성화
+            zoomControlsEnabled: false,
           ),
           // 애니메이션 버튼
           AnimatedSlide(
