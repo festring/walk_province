@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "244604491973",
+    "project_id": "walking-35fd9",
+    "storage_bucket": "walking-35fd9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:244604491973:android:e5f2d2ae509af15c1138ac",
+        "android_client_info": {
+          "package_name": "com.example.walk_province"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdkVLaK17PjtxeIMZb_Yji0jlOM2RBlVw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

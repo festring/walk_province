@@ -30,12 +30,23 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  google_maps_flutter: ^2.9.0
 
+  # Firebase 패키지들
+  firebase_core:
+  firebase_auth:
+  cloud_firestore:
+  firebase_storage:
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
+  # Google Maps 패키지
+  google_maps_flutter:
+
+  # 이미지 선택기
+  image_picker:
+
+  # Cupertino 아이콘
+  cupertino_icons:
+  image:
+
 
 dev_dependencies:
   flutter_test:

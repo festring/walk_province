@@ -1,49 +1,50 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'map_screen.dart';
+import 'profile_screen.dart';
+import 'firebase_options.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: MapSample(),
+    return MaterialApp(
+      title: '산책로 추천 앱',
+      theme: ThemeData(primarySwatch: Colors.green),
+      home: HomeScreen(),
     );
   }
 }
 
-class MapSample extends StatefulWidget {
-  const MapSample({super.key});
-
-  @override
-  State<MapSample> createState() => MapSampleState();
-}
-
-class MapSampleState extends State<MapSample> {
-  late GoogleMapController mapController;
-
-  final LatLng _center = const LatLng(37.7749, -122.4194); // 샌프란시스코 위치 예시
-
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-  }
-
+class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('검색창 들어갈 곳'),
-        backgroundColor: const Color.fromARGB(255, 201, 239, 203),
-      ),
-      body: GoogleMap(
-        onMapCreated: _onMapCreated,
-        initialCameraPosition: CameraPosition(
-          target: _center,
-          zoom: 11.0,
+      appBar: AppBar(title: Text('산책로 추천 앱')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => MapScreen()));
+              },
+              child: Text('지도 보기'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => ProfileScreen()));
+              },
+              child: Text('프로필 보기'),
+            ),
+          ],
         ),
       ),
     );
