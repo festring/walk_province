@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'marker.dart';
 
 class MapSample extends StatefulWidget {
   const MapSample({super.key});
@@ -12,6 +13,7 @@ class MapSample extends StatefulWidget {
 
 class MapSampleState extends State<MapSample> {
   GoogleMapController? _mapController;
+  final MarkerController _markerController = MarkerController();
 
   LatLng _currentPosition = LatLng(37.7749, -122.4194); // 샌프란시스코
 
@@ -19,6 +21,9 @@ class MapSampleState extends State<MapSample> {
   void initState() {
     super.initState();
     _checkPermissionAndSetInitialLocation();
+    _markerController.addListener(() {
+      setState(() {}); // MarkerController의 상태 변경 시 UI 업데이트
+    });
   }
 
   // 초기 권한 체크 및 위치 설정
@@ -52,17 +57,77 @@ class MapSampleState extends State<MapSample> {
   }
 
   @override
+  void dispose() {
+    _markerController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Google Maps')),
-      body: GoogleMap(
-        onMapCreated: (controller) => _mapController = controller,
-        initialCameraPosition: CameraPosition(
-          target: _currentPosition,
-          zoom: 14.0,
-        ),
-        myLocationEnabled: true,
-        myLocationButtonEnabled: false, // 기본 위치 버튼 비활성화
+      appBar: AppBar(
+        title: const Text('검색창 들어갈 곳'),
+        backgroundColor: const Color.fromARGB(255, 201, 239, 203),
+      ),
+      body: Stack(
+        children: [
+          // Google Map 위젯
+          GoogleMap(
+            onMapCreated: (controller) => _mapController = controller,
+            initialCameraPosition: CameraPosition(
+              target: _currentPosition,
+              zoom: 14.0,
+            ),
+            markers: _markerController.singleMarker != null
+                ? {_markerController.singleMarker!}
+                : {},
+            onLongPress: _markerController.addMarker, // 지도를 길게 누르면 마커 갱신
+            onTap: (LatLng position) {
+              _markerController.removeMarker(); // 지도를 터치하면 마커 제거
+            },
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false, // 기본 위치 버튼 비활성화
+          ),
+          // 애니메이션 버튼
+          AnimatedSlide(
+            duration: const Duration(milliseconds: 300),
+            offset: _markerController.isMarkerVisible
+                ? Offset(0, 0)
+                : Offset(0, 1), // 버튼의 위치 조정
+            curve: Curves.easeInOut,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    // 사진 업로드 버튼 클릭 시 동작
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        content: const Text("Upload photo for this location?"),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text("Cancel"),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              // 실제 업로드 동작을 여기에 추가
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text("Upload"),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: const Text("사진 업로드"),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _setCurrentLocation,
