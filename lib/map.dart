@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'marker.dart';
+import 'scrollViewPage.dart';
 
 class MapSample extends StatefulWidget {
   const MapSample({super.key});
@@ -66,8 +67,22 @@ class MapSampleState extends State<MapSample> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('검색창 들어갈 곳'),
-        backgroundColor: const Color.fromARGB(255, 201, 239, 203),
+        title: const Text('주변의 산책로를 확인하세요'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              // 버튼 클릭 시 실행되는 동작
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ScrollViewPage(),
+                ),
+              );
+            },
+          ),
+        ],
+        backgroundColor: const Color.fromRGBO(201, 239, 203, 1),
       ),
       body: Stack(
         children: [
