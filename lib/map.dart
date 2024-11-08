@@ -22,18 +22,18 @@ class MapSampleState extends State<MapSample> {
       DebounceTimer(); // 일정 시간 동안 이벤트를 제어하기 위한 디바운스 타이머 인스턴스 생성
 
   LatLng _currentPosition = LatLng(37.7749, -122.4194); // 초기 위치는 샌프란시스코로 설정
+  List<Rect> _rectangles = []; // 사각형 리스트
 
   @override
   void initState() {
     super.initState();
     _checkPermissionAndSetInitialLocation(); // 권한 체크 및 초기 위치 설정 메서드 호출
-    // 지도 화면 범위가 고정되었을 때 실행할 콜백 설정
     _debounceTimer.startDebounce((LatLngBounds bounds) {
       debugPrint('현재 화면 범위 좌표:');
       debugPrint('Southwest: ${bounds.southwest}');
       debugPrint('Northeast: ${bounds.northeast}');
+      _drawRectangles(bounds);
     });
-    // 마커 상태가 변경될 때 UI 업데이트
     _markerController.addListener(() {
       setState(() {});
     });
@@ -42,41 +42,54 @@ class MapSampleState extends State<MapSample> {
   // 위치 권한 체크 및 초기 위치 설정 메서드
   Future<void> _checkPermissionAndSetInitialLocation() async {
     if (await _requestPermission()) {
-      // 권한이 허용된 경우
-      _setCurrentLocation(); // 현재 위치 설정
+      _setCurrentLocation();
     } else {
-      debugPrint('위치 권한이 거부되었습니다.'); // 권한이 거부된 경우 콘솔 출력
+      debugPrint('위치 권한이 거부되었습니다.');
     }
   }
 
   // 위치 버튼 클릭 시 현재 위치로 설정하는 메서드
   Future<void> _setCurrentLocation() async {
     try {
-      Position position =
-          await Geolocator.getCurrentPosition(); // 현재 위치 정보 가져오기
-      _currentPosition =
-          LatLng(position.latitude, position.longitude); // 위치 정보 기반으로 좌표 설정
-      print(position); // 콘솔에 위치 출력
-
-      // 지도 카메라를 현재 위치로 이동
+      Position position = await Geolocator.getCurrentPosition();
+      _currentPosition = LatLng(position.latitude, position.longitude);
+      print(position);
       _mapController?.animateCamera(
         CameraUpdate.newLatLng(_currentPosition),
       );
     } catch (e) {
-      debugPrint('현재 위치를 가져오는 중 오류 발생: $e'); // 위치 가져오기 실패 시 오류 출력
+      debugPrint('현재 위치를 가져오는 중 오류 발생: $e');
     }
   }
 
   // 위치 권한 요청 메서드
   Future<bool> _requestPermission() async {
-    PermissionStatus status = await Permission.location.request(); // 위치 권한 요청
-    return status.isGranted; // 권한이 허용된 경우 true 반환
+    PermissionStatus status = await Permission.location.request();
+    return status.isGranted;
+  }
+
+  // 화면 범위에 따라 사각형 좌표 생성 및 배치
+  void _drawRectangles(LatLngBounds bounds) {
+    setState(() {
+      _rectangles.clear(); // 기존 사각형 제거
+      List<LatLng> points = [
+        LatLng(bounds.southwest.latitude, bounds.southwest.longitude),
+        LatLng(bounds.northeast.latitude, bounds.northeast.longitude),
+        // 다른 좌표 추가 필요 시 추가
+      ];
+      for (LatLng point in points) {
+        // 화면 크기와 겹침 여부 계산 로직 추가 필요
+        // 예시: 사각형 위치, 크기 설정 (겹치지 않게 계산)
+        Rect newRect = Rect.fromLTWH(point.longitude, point.latitude, 50, 50);
+        _rectangles.add(newRect);
+      }
+    });
   }
 
   @override
   void dispose() {
-    _markerController.dispose(); // 마커 컨트롤러 리소스 해제
-    _debounceTimer.dispose(); // 타이머 리소스 해제
+    _markerController.dispose();
+    _debounceTimer.dispose();
     super.dispose();
   }
 
@@ -84,78 +97,83 @@ class MapSampleState extends State<MapSample> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('주변의 산책로를 확인하세요'), // 앱바 제목
+        title: const Text('주변의 산책로를 확인하세요'),
         actions: [
           IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
-              // 검색 버튼 클릭 시 실행되는 동작
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      ScrollViewPage(), // ScrollViewPage로 화면 전환
+                  builder: (context) => ScrollViewPage(),
                 ),
               );
             },
           ),
         ],
-        backgroundColor: const Color.fromRGBO(201, 239, 203, 1), // 앱바 배경 색상 설정
+        backgroundColor: const Color.fromRGBO(201, 239, 203, 1),
       ),
       body: Stack(
         children: [
-          // 구글 지도 위젯
           GoogleMap(
-            onMapCreated: (controller) =>
-                _mapController = controller, // 지도 생성 시 컨트롤러 초기화
+            onMapCreated: (controller) => _mapController = controller,
             onCameraMove: (_) {
-              if (_mapController != null) {
-                _debounceTimer
-                    .resetDebounce(_mapController!); // 카메라 이동 시 디바운스 타이머 초기화
-              }
+              _debounceTimer.resetDebounce(_mapController!);
+              setState(() {
+                _rectangles.clear(); // 화면 움직임 시 사각형 제거
+              });
             },
             initialCameraPosition: CameraPosition(
-              target: _currentPosition, // 초기 지도 위치 설정
-              zoom: 14.0, // 초기 줌 레벨 설정
+              target: _currentPosition,
+              zoom: 14.0,
             ),
             markers: _markerController.singleMarker != null
-                ? {_markerController.singleMarker!} // 단일 마커가 존재할 경우 마커 표시
+                ? {_markerController.singleMarker!}
                 : {},
-            onLongPress: _markerController.addMarker, // 지도 길게 누를 시 마커 추가
+            onLongPress: _markerController.addMarker,
             onTap: (LatLng position) {
-              _markerController.removeMarker(); // 지도 터치 시 마커 제거
+              _markerController.removeMarker();
             },
-            myLocationEnabled: true, // 현재 위치 표시 설정
-            myLocationButtonEnabled: false, // 기본 위치 버튼 비활성화
-            zoomControlsEnabled: false, // 줌 버튼 비활성화
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
           ),
-          // 애니메이션 버튼
+          // 사각형 위치 표시
+          for (var rect in _rectangles)
+            Positioned(
+              left: rect.left,
+              top: rect.top,
+              width: rect.width,
+              height: rect.height,
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.red),
+                  color: Colors.red.withOpacity(0.3),
+                ),
+              ),
+            ),
           AnimatedSlide(
-            duration: const Duration(milliseconds: 300), // 애니메이션 지속 시간
-            offset: _markerController.isMarkerVisible
-                ? Offset(0, 0) // 마커가 보일 때 버튼 위치
-                : Offset(0, 1), // 마커가 없을 때 버튼 위치
-            curve: Curves.easeInOut, // 애니메이션 커브 설정
+            duration: const Duration(milliseconds: 300),
+            offset:
+                _markerController.isMarkerVisible ? Offset(0, 0) : Offset(0, 1),
+            curve: Curves.easeInOut,
             child: Align(
-              alignment: Alignment.bottomCenter, // 버튼을 화면 하단에 배치
+              alignment: Alignment.bottomCenter,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: ElevatedButton(
                   onPressed: () {
-                    // 사진 업로드 버튼 클릭 시 동작
                     showDialog(
                       context: context,
                       builder: (context) => AlertDialog(
                         content: const Text("Upload photo for this location?"),
                         actions: [
                           TextButton(
-                            onPressed: () => Navigator.of(context)
-                                .pop(), // 취소 버튼 클릭 시 다이얼로그 닫기
+                            onPressed: () => Navigator.of(context).pop(),
                             child: const Text("Cancel"),
                           ),
                           TextButton(
                             onPressed: () {
-                              // 실제 업로드 동작을 여기에 추가
                               Navigator.of(context).pop();
                             },
                             child: const Text("Upload"),
@@ -164,7 +182,7 @@ class MapSampleState extends State<MapSample> {
                       ),
                     );
                   },
-                  child: const Text("사진 업로드"), // 버튼 텍스트
+                  child: const Text("사진 업로드"),
                 ),
               ),
             ),
@@ -172,8 +190,8 @@ class MapSampleState extends State<MapSample> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _setCurrentLocation, // 위치 설정 버튼 클릭 시 동작
-        child: Icon(Icons.my_location), // 버튼 아이콘
+        onPressed: _setCurrentLocation,
+        child: Icon(Icons.my_location),
       ),
     );
   }
