@@ -54,10 +54,24 @@ class MapSampleState extends State<MapSample> {
 
       // 예시 배열로 사각형 생성
       _rectangleDrawer.generateRectangles([
-        [1, bounds.southwest.longitude, bounds.southwest.latitude],
-        [2, bounds.northeast.longitude, bounds.northeast.latitude],
         [
-          3,
+          'user123',
+          '',
+          15,
+          bounds.southwest.longitude + 0.001,
+          bounds.southwest.latitude + 0.001
+        ],
+        [
+          'user456',
+          '',
+          23,
+          bounds.northeast.longitude - 0.001,
+          bounds.northeast.latitude - 0.001
+        ],
+        [
+          'user789',
+          '',
+          10,
           (bounds.northeast.longitude + bounds.southwest.longitude) / 2,
           (bounds.northeast.latitude + bounds.southwest.latitude) / 2
         ]
