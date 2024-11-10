@@ -7,6 +7,7 @@ import 'scrollViewPage.dart';
 import 'debounce_timer.dart';
 import 'rectangle_drawer.dart';
 import 'bottom_sheet.dart';
+import 'package:dio/dio.dart'; // Dio 패키지 import
 
 class MapSample extends StatefulWidget {
   const MapSample({super.key});
@@ -20,6 +21,7 @@ class MapSampleState extends State<MapSample> {
   final MarkerController _markerController = MarkerController();
   final DebounceTimer _debounceTimer = DebounceTimer();
   final RectangleDrawer _rectangleDrawer = RectangleDrawer();
+  final Dio _dio = Dio(); // Dio 인스턴스 생성
 
   LatLng _currentPosition = LatLng(37.7749, -122.4194);
 
@@ -27,6 +29,7 @@ class MapSampleState extends State<MapSample> {
   void initState() {
     super.initState();
     _checkPermissionAndSetInitialLocation();
+    _fetchData(); // API 호출
     _debounceTimer.startDebounce((LatLngBounds bounds) {
       debugPrint('현재 화면 범위 좌표:');
       debugPrint('Southwest: ${bounds.southwest}');
@@ -65,6 +68,21 @@ class MapSampleState extends State<MapSample> {
     _markerController.addListener(() {
       setState(() {});
     });
+  }
+
+  // FastAPI에서 데이터를 받아오는 메서드
+  Future<void> _fetchData() async {
+    try {
+      final response = await _dio.get(
+          "https://6f765f4d-58a1-466a-b2d3-c6d7c5e74184-00-3s88uoim6pgq9.pike.replit.dev/");
+      if (response.statusCode == 200) {
+        debugPrint("API 응답: ${response.data}");
+      } else {
+        debugPrint("API 호출 실패: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("API 호출 중 오류 발생: $e");
+    }
   }
 
   Future<void> _checkPermissionAndSetInitialLocation() async {
