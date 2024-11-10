@@ -38,6 +38,28 @@ void showCustomBottomSheet(BuildContext context, Map<String, String> item) {
                   item['Distance'] ?? 'No Distance',
                   style: TextStyle(fontSize: 14, color: Colors.blueGrey),
                 ),
+                SizedBox(height: 16),
+                // 가로 이미지 스크롤뷰 추가
+                SizedBox(
+                  height: 100, // 이미지의 높이
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: 5, // 예시 이미지 개수
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: EdgeInsets.only(right: 8.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: Image.network(
+                            'https://picsum.photos/100', // 예시 이미지 URL
+                            width: 100, // 이미지의 너비
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ],
             ),
           );
