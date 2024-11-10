@@ -55,9 +55,9 @@ class MapSampleState extends State<MapSample> {
       // 예시 배열로 사각형 생성
       _rectangleDrawer.generateRectangles([
         [
-          'user123',
-          '',
-          15,
+          'user123', // 사용자 ID
+          '', // 이미지 데이터 (base64 문자열, 예시에서는 빈 문자열로 설정)
+          15, // 좋아요 개수
           bounds.southwest.longitude + 0.001,
           bounds.southwest.latitude + 0.001
         ],
@@ -184,7 +184,9 @@ class MapSampleState extends State<MapSample> {
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
           ),
-          ..._rectangleDrawer.displayRectangles(), // 사각형 표시 위젯 리스트
+          ..._rectangleDrawer.displayRectangles(() {
+            setState(() {}); // 클릭 시 상태 변경을 위해 setState 호출
+          }), // 사각형 표시 위젯 리스트
           AnimatedSlide(
             duration: const Duration(milliseconds: 300),
             offset:
