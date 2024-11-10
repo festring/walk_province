@@ -5,8 +5,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'marker.dart';
 import 'scrollViewPage.dart';
 import 'debounce_timer.dart';
+import 'rectangle_drawer.dart';
 
-// 지도 화면을 구성하는 위젯 클래스 정의
 class MapSample extends StatefulWidget {
   const MapSample({super.key});
 
@@ -15,31 +15,57 @@ class MapSample extends StatefulWidget {
 }
 
 class MapSampleState extends State<MapSample> {
-  GoogleMapController? _mapController; // 지도 컨트롤러를 관리하는 변수
-  final MarkerController _markerController =
-      MarkerController(); // 마커를 관리하는 컨트롤러 인스턴스
-  final DebounceTimer _debounceTimer =
-      DebounceTimer(); // 일정 시간 동안 이벤트를 제어하기 위한 디바운스 타이머 인스턴스 생성
+  GoogleMapController? _mapController;
+  final MarkerController _markerController = MarkerController();
+  final DebounceTimer _debounceTimer = DebounceTimer();
+  final RectangleDrawer _rectangleDrawer = RectangleDrawer();
 
-  LatLng _currentPosition = LatLng(37.7749, -122.4194); // 초기 위치는 샌프란시스코로 설정
-  List<Rect> _rectangles = []; // 사각형 리스트
+  LatLng _currentPosition = LatLng(37.7749, -122.4194);
 
   @override
   void initState() {
     super.initState();
-    _checkPermissionAndSetInitialLocation(); // 권한 체크 및 초기 위치 설정 메서드 호출
+    _checkPermissionAndSetInitialLocation();
     _debounceTimer.startDebounce((LatLngBounds bounds) {
       debugPrint('현재 화면 범위 좌표:');
       debugPrint('Southwest: ${bounds.southwest}');
       debugPrint('Northeast: ${bounds.northeast}');
-      _drawRectangles(bounds);
+      // 나머지 두 꼭짓점 계산
+      LatLng northwest =
+          LatLng(bounds.northeast.latitude, bounds.southwest.longitude);
+      LatLng southeast =
+          LatLng(bounds.southwest.latitude, bounds.northeast.longitude);
+
+      // 4 꼭짓점 모두 출력
+      debugPrint('Northwest: $northwest');
+      debugPrint('Southeast: $southeast');
+
+      // 앱바 및 기타 요소의 높이를 고려한 유효한 화면 크기 계산
+      double topPadding = MediaQuery.of(context).padding.top; // 상태바 높이
+      double appBarHeight = kToolbarHeight; // AppBar 높이
+      double effectiveHeight =
+          MediaQuery.of(context).size.height - topPadding - appBarHeight;
+      Size screenSize =
+          Size(MediaQuery.of(context).size.width, effectiveHeight);
+
+      // 예시 배열로 사각형 생성
+      _rectangleDrawer.generateRectangles([
+        [1, bounds.southwest.longitude, bounds.southwest.latitude],
+        [2, bounds.northeast.longitude, bounds.northeast.latitude],
+        [
+          3,
+          (bounds.northeast.longitude + bounds.southwest.longitude) / 2,
+          (bounds.northeast.latitude + bounds.southwest.latitude) / 2
+        ]
+      ], bounds, screenSize);
+
+      setState(() {});
     });
     _markerController.addListener(() {
       setState(() {});
     });
   }
 
-  // 위치 권한 체크 및 초기 위치 설정 메서드
   Future<void> _checkPermissionAndSetInitialLocation() async {
     if (await _requestPermission()) {
       _setCurrentLocation();
@@ -48,12 +74,10 @@ class MapSampleState extends State<MapSample> {
     }
   }
 
-  // 위치 버튼 클릭 시 현재 위치로 설정하는 메서드
   Future<void> _setCurrentLocation() async {
     try {
       Position position = await Geolocator.getCurrentPosition();
       _currentPosition = LatLng(position.latitude, position.longitude);
-      print(position);
       _mapController?.animateCamera(
         CameraUpdate.newLatLng(_currentPosition),
       );
@@ -62,28 +86,9 @@ class MapSampleState extends State<MapSample> {
     }
   }
 
-  // 위치 권한 요청 메서드
   Future<bool> _requestPermission() async {
     PermissionStatus status = await Permission.location.request();
     return status.isGranted;
-  }
-
-  // 화면 범위에 따라 사각형 좌표 생성 및 배치
-  void _drawRectangles(LatLngBounds bounds) {
-    setState(() {
-      _rectangles.clear(); // 기존 사각형 제거
-      List<LatLng> points = [
-        LatLng(bounds.southwest.latitude, bounds.southwest.longitude),
-        LatLng(bounds.northeast.latitude, bounds.northeast.longitude),
-        // 다른 좌표 추가 필요 시 추가
-      ];
-      for (LatLng point in points) {
-        // 화면 크기와 겹침 여부 계산 로직 추가 필요
-        // 예시: 사각형 위치, 크기 설정 (겹치지 않게 계산)
-        Rect newRect = Rect.fromLTWH(point.longitude, point.latitude, 50, 50);
-        _rectangles.add(newRect);
-      }
-    });
   }
 
   @override
@@ -120,7 +125,7 @@ class MapSampleState extends State<MapSample> {
             onCameraMove: (_) {
               _debounceTimer.resetDebounce(_mapController!);
               setState(() {
-                _rectangles.clear(); // 화면 움직임 시 사각형 제거
+                _rectangleDrawer.clearRectangles();
               });
             },
             initialCameraPosition: CameraPosition(
@@ -138,20 +143,7 @@ class MapSampleState extends State<MapSample> {
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
           ),
-          // 사각형 위치 표시
-          for (var rect in _rectangles)
-            Positioned(
-              left: rect.left,
-              top: rect.top,
-              width: rect.width,
-              height: rect.height,
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.red),
-                  color: Colors.red.withOpacity(0.3),
-                ),
-              ),
-            ),
+          ..._rectangleDrawer.displayRectangles(), // 사각형 표시 위젯 리스트
           AnimatedSlide(
             duration: const Duration(milliseconds: 300),
             offset:
