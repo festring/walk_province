@@ -6,6 +6,7 @@ import 'marker.dart';
 import 'scrollViewPage.dart';
 import 'debounce_timer.dart';
 import 'rectangle_drawer.dart';
+import 'bottom_sheet.dart';
 
 class MapSample extends StatefulWidget {
   const MapSample({super.key});
@@ -91,6 +92,19 @@ class MapSampleState extends State<MapSample> {
     return status.isGranted;
   }
 
+  Future<void> _navigateAndGetItems(BuildContext context) async {
+    Map<String, String> item = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ScrollViewPage(),
+      ),
+    );
+
+    print('Received items: $item');
+    // bottomsheet 띄우기
+    showCustomBottomSheet(context, item);
+  }
+
   @override
   void dispose() {
     _markerController.dispose();
@@ -107,12 +121,7 @@ class MapSampleState extends State<MapSample> {
           IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ScrollViewPage(),
-                ),
-              );
+              _navigateAndGetItems(context);
             },
           ),
         ],

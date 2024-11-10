@@ -17,7 +17,6 @@ class _ScrollViewPageState extends State<ScrollViewPage> {
     _scrollController.addListener(_scrollListener);
   }
 
-  // 데이터를 로드하는 함수
   void _loadData() {
     if (_isLoading) return;
 
@@ -25,16 +24,16 @@ class _ScrollViewPageState extends State<ScrollViewPage> {
       _isLoading = true;
     });
 
-    // 일단 딜레이가 1초있는데 나중에 벗깁시다
+    // 예시로 1초 후 데이터 추가
     Future.delayed(Duration(seconds: 1), () {
       List<Map<String, String>> newItems = List.generate(
-          20,
-          (index) => {
-                'Name': 'Item ${_items.length + index + 1}',
-                'Description':
-                    'This is the description for Item ${_items.length + index + 1}',
-                'Distance': '${(index + 1) * 1.5} km', // 예시 거리 값
-              });
+        20,
+        (index) => {
+          'Name': 'Item ${_items.length + index + 1}',
+          'Description': 'Description for Item ${_items.length + index + 1}',
+          'Distance': '${(index + 1) * 1.5} km',
+        },
+      );
       setState(() {
         _items.addAll(newItems);
         _isLoading = false;
@@ -47,6 +46,11 @@ class _ScrollViewPageState extends State<ScrollViewPage> {
         _scrollController.position.maxScrollExtent) {
       _loadData();
     }
+  }
+
+  // _items 리턴하는 함수 추가
+  List<Map<String, String>> getItems() {
+    return _items;
   }
 
   @override
@@ -69,8 +73,7 @@ class _ScrollViewPageState extends State<ScrollViewPage> {
               description: _items[index]['Description'] ?? 'No Description',
               distance: _items[index]['Distance'] ?? 'No Distance',
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('${_items[index]['Name']} clicked')));
+                Navigator.pop(context, _items[index]);
               },
             );
           }
@@ -86,7 +89,6 @@ class _ScrollViewPageState extends State<ScrollViewPage> {
   }
 }
 
-// CustomListItem 위젯에 Distance 추가
 class CustomListItem extends StatelessWidget {
   final String name;
   final String description;
