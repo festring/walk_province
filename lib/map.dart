@@ -135,6 +135,16 @@ class MapSampleState extends State<MapSample> {
     print('Received items: $item');
     // bottomsheet 띄우기
     showCustomBottomSheet(context, item);
+    print(item['Lat']);
+    try {
+      _currentPosition =
+          LatLng(double.parse(item['Lat']!), double.parse(item['Lng']!));
+      _mapController?.animateCamera(
+        CameraUpdate.newLatLng(_currentPosition),
+      );
+    } catch (e) {
+      debugPrint('위치를 가져오는 중 오류 발생: $e');
+    }
   }
 
   @override

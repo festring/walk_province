@@ -5,6 +5,7 @@ void showCustomBottomSheet(BuildContext context, Map<String, String> item) {
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withOpacity(0.0),
     builder: (BuildContext context) {
       return DraggableScrollableSheet(
         initialChildSize: 0.5, // BottomSheet가 시작될 때 화면의 50% 크기

@@ -32,6 +32,8 @@ class _ScrollViewPageState extends State<ScrollViewPage> {
           'Name': 'Item ${_items.length + index + 1}',
           'Description': 'Description for Item ${_items.length + index + 1}',
           'Distance': '${(index + 1) * 1.5} km',
+          'Lat': '${(index)}',
+          'Lng': '${(index)}',
         },
       );
       setState(() {
@@ -72,6 +74,8 @@ class _ScrollViewPageState extends State<ScrollViewPage> {
               name: _items[index]['Name'] ?? 'No Name',
               description: _items[index]['Description'] ?? 'No Description',
               distance: _items[index]['Distance'] ?? 'No Distance',
+              lat: _items[index]['Lat'] ?? 'No Lat',
+              lng: _items[index]['Lng'] ?? 'No Lng',
               onTap: () {
                 Navigator.pop(context, _items[index]);
               },
@@ -93,12 +97,16 @@ class CustomListItem extends StatelessWidget {
   final String name;
   final String description;
   final String distance;
+  final String lat;
+  final String lng;
   final VoidCallback onTap;
 
   CustomListItem({
     required this.name,
     required this.description,
     required this.distance,
+    required this.lat,
+    required this.lng,
     required this.onTap,
   });
 
