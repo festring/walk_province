@@ -9,6 +9,7 @@ class _ScrollViewPageState extends State<ScrollViewPage> {
   List<Map<String, String>> _items = [];
   bool _isLoading = false;
   ScrollController _scrollController = ScrollController();
+  int cnt = 0;
 
   @override
   void initState() {
@@ -26,6 +27,8 @@ class _ScrollViewPageState extends State<ScrollViewPage> {
 
     // 예시로 1초 후 데이터 추가
     Future.delayed(Duration(seconds: 1), () {
+      cnt += 1;
+      debugPrint('${cnt}');
       List<Map<String, String>> newItems = List.generate(
         20,
         (index) => {
