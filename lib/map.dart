@@ -85,17 +85,34 @@ class MapSampleState extends State<MapSample> {
   }
 
   // FastAPI에서 데이터를 받아오는 메서드
+// FastAPI에서 데이터를 받아오는 메서드
   Future<void> _fetchData() async {
     try {
+      // GET 요청
       final response = await _dio.get(
-          "https://6f765f4d-58a1-466a-b2d3-c6d7c5e74184-00-3s88uoim6pgq9.pike.replit.dev/");
+          "https://6f765f4d-58a1-466a-b2d3-c6d7c5e74184-00-3s88uoim6pgq9.pike.replit.dev/get",
+          queryParameters: {'q': 'example query'}); // GET 요청에 'q' 파라미터 추가
       if (response.statusCode == 200) {
-        debugPrint("API 응답: ${response.data}");
+        debugPrint("GET API 응답: ${response.data}");
       } else {
-        debugPrint("API 호출 실패: ${response.statusCode}");
+        debugPrint("GET API 호출 실패: ${response.statusCode}");
       }
     } catch (e) {
-      debugPrint("API 호출 중 오류 발생: $e");
+      debugPrint("GET API 호출 중 오류 발생: $e");
+    }
+
+    try {
+      // POST 요청
+      final postResponse = await _dio.post(
+          "https://6f765f4d-58a1-466a-b2d3-c6d7c5e74184-00-3s88uoim6pgq9.pike.replit.dev/post",
+          data: {'item': 'example item'}); // POST 요청에 'item' 데이터를 포함
+      if (postResponse.statusCode == 200) {
+        debugPrint("POST API 응답: ${postResponse.data}");
+      } else {
+        debugPrint("POST API 호출 실패: ${postResponse.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("POST API 호출 중 오류 발생: $e");
     }
   }
 
