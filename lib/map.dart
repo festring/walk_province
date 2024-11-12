@@ -287,6 +287,12 @@ class MapSampleState extends State<MapSample> {
           ..._rectangleDrawer.displayRectangles(() {
             setState(() {}); // 클릭 시 상태 변경을 위해 setState 호출
           }), // 사각형 표시 위젯 리스트
+
+          CustomBottomSheetContent(
+            info: info,
+            controller: _controller,
+            scrollController: _scrollController,
+          ),
           AnimatedSlide(
             duration: const Duration(milliseconds: 300),
             offset:
@@ -321,11 +327,6 @@ class MapSampleState extends State<MapSample> {
                 ),
               ),
             ),
-          ),
-          CustomBottomSheetContent(
-            info: info,
-            controller: _controller,
-            scrollController: _scrollController,
           ),
         ],
       ),
