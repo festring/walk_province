@@ -28,6 +28,8 @@ class MapSampleState extends State<MapSample> {
 
   final Dio _dio = Dio(); // Dio 인스턴스 생성
 
+  Set<Circle> _circles = {};
+
   Map<String, String> info = {
     'name': "temp",
     'description': "temp",
@@ -106,7 +108,6 @@ class MapSampleState extends State<MapSample> {
   }
 
   // FastAPI에서 데이터를 받아오는 메서드
-// FastAPI에서 데이터를 받아오는 메서드
   Future<void> _fetchData() async {
     try {
       // GET 요청
@@ -165,6 +166,8 @@ class MapSampleState extends State<MapSample> {
   //스크롤바 구현부분
   Future<void> _navigateAndGetItems(BuildContext context) async {
     try {
+      _circles.removeWhere((circle) => circle.circleId.value == 'circle_1');
+
       print(_center);
       Map<String, String> item = await Navigator.push(
         context,
@@ -196,6 +199,18 @@ class MapSampleState extends State<MapSample> {
         } else {
           debugPrint("GET API 호출 실패: ${response.statusCode}");
         }
+
+        _circles.add(
+          Circle(
+            circleId: CircleId('circle_1'),
+            center: LatLng(
+                response.data['xpos'], response.data['ypos']), // 원의 중심 위치
+            radius: 80, // 반경 (미터 단위)
+            fillColor: Colors.blue.withOpacity(0.7), // 원의 채우기 색
+            strokeColor: Colors.blue, // 원의 테두리 색
+            strokeWidth: 2, // 테두리 두께
+          ),
+        );
 
         info = {
           'name': response.data['name'],
@@ -261,6 +276,7 @@ class MapSampleState extends State<MapSample> {
         children: [
           GoogleMap(
             onMapCreated: (controller) => _mapController = controller,
+            circles: _circles,
             onCameraMove: (CameraPosition position) {
               _debounceTimer.resetDebounce(_mapController!);
               setState(() {
