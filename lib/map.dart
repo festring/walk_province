@@ -24,6 +24,7 @@ class MapSampleState extends State<MapSample> {
   final Dio _dio = Dio(); // Dio 인스턴스 생성
 
   LatLng _currentPosition = LatLng(37.7749, -122.4194);
+  LatLng _center = LatLng(1, 1);
 
   @override
   void initState() {
@@ -141,26 +142,64 @@ class MapSampleState extends State<MapSample> {
     return status.isGranted;
   }
 
+  //스크롤바 구현부분
   Future<void> _navigateAndGetItems(BuildContext context) async {
-    Map<String, String> item = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ScrollViewPage(),
-      ),
-    );
-
-    print('Received items: $item');
-    // bottomsheet 띄우기
-    showCustomBottomSheet(context, item);
-    print(item['Lat']);
     try {
-      _currentPosition =
-          LatLng(double.parse(item['Lat']!), double.parse(item['Lng']!));
-      _mapController?.animateCamera(
-        CameraUpdate.newLatLng(_currentPosition),
+      print(_center);
+      Map<String, String> item = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ScrollViewPage(centerPosition: _center),
+        ),
       );
+
+      print('Received items: $item');
+
+      debugPrint('${item['trailid']} 바텀쉣!!!!!트');
+
+      try {
+        // GET 요청
+        final response = await _dio.get(
+            "https://6f765f4d-58a1-466a-b2d3-c6d7c5e74184-00-3s88uoim6pgq9.pike.replit.dev/track/detail",
+            queryParameters: {'trail_id': int.parse(item['trailid']!)});
+        if (response.statusCode == 200) {
+          debugPrint("GET API 응답: ${response.data}");
+        } else {
+          debugPrint("GET API 호출 실패: ${response.statusCode}");
+        }
+
+        Map<String, String> info = {
+          'name': response.data['name'],
+          'description': response.data['path'],
+          'course_level': response.data['course_level'].toString(),
+          'length': response.data['length'].toString(),
+          'explanation': response.data['explanation'],
+          'time': response.data['time'],
+          'water': response.data['water'],
+          'toilet': response.data['toilet'],
+          'market': response.data['market'],
+          'position': response.data['position'],
+          'lat': response.data['xpos'].toString(),
+          'lng': response.data['ypos'].toString(),
+        };
+
+        showCustomBottomSheet(context, info);
+        try {
+          _currentPosition =
+              LatLng(double.parse(info['lat']!), double.parse(info['lng']!));
+          _mapController?.animateCamera(
+            CameraUpdate.newLatLng(_currentPosition),
+          );
+        } catch (e) {
+          debugPrint('위치를 가져오는 중 오류 발생: $e');
+        }
+      } catch (e) {
+        debugPrint("GET API 호출 중 오류 발생: $e");
+      }
+
+      // bottomsheet 띄우기
     } catch (e) {
-      debugPrint('위치를 가져오는 중 오류 발생: $e');
+      debugPrint('현재 위치를 가져오는 중 오류 발생: $e');
     }
   }
 
@@ -190,10 +229,12 @@ class MapSampleState extends State<MapSample> {
         children: [
           GoogleMap(
             onMapCreated: (controller) => _mapController = controller,
-            onCameraMove: (_) {
+            onCameraMove: (CameraPosition position) {
               _debounceTimer.resetDebounce(_mapController!);
               setState(() {
                 _rectangleDrawer.clearRectangles();
+                _center = position.target;
+                debugPrint("${position.target}");
               });
             },
             initialCameraPosition: CameraPosition(

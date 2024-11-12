@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
-void showCustomBottomSheet(BuildContext context, Map<String, String> item) {
+Future<void> showCustomBottomSheet(
+    BuildContext context, Map<String, String> info) async {
+  debugPrint('${info['trailid']} 바텀쉣!!!!!트');
+
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -26,18 +29,13 @@ void showCustomBottomSheet(BuildContext context, Map<String, String> item) {
               controller: scrollController,
               children: [
                 Text(
-                  item['Name'] ?? 'No Name',
+                  info['name'] ?? 'No Name',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 8),
                 Text(
-                  item['Description'] ?? 'No Description',
+                  info['description'] ?? 'No Description',
                   style: TextStyle(fontSize: 16),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  item['Distance'] ?? 'No Distance',
-                  style: TextStyle(fontSize: 14, color: Colors.blueGrey),
                 ),
                 SizedBox(height: 16),
                 // 가로 이미지 스크롤뷰 추가

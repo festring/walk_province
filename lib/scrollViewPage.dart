@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:dio/dio.dart'; // Dio 패키지 import
 
 class ScrollViewPage extends StatefulWidget {
+  LatLng centerPosition;
+
+  ScrollViewPage({required this.centerPosition});
+
   @override
   _ScrollViewPageState createState() => _ScrollViewPageState();
 }
@@ -8,42 +14,65 @@ class ScrollViewPage extends StatefulWidget {
 class _ScrollViewPageState extends State<ScrollViewPage> {
   List<Map<String, String>> _items = [];
   bool _isLoading = false;
+  double _centerLat = 1;
+  double _centerLng = 1;
   ScrollController _scrollController = ScrollController();
-  int cnt = 0;
+  int cnt = 1;
+  final Dio _dio = Dio();
 
   @override
   void initState() {
     super.initState();
+    _centerLat = widget.centerPosition.latitude;
+    _centerLng = widget.centerPosition.longitude;
+    print("${_centerLat} 제발 아!!!!!!!!");
     _loadData();
     _scrollController.addListener(_scrollListener);
   }
 
-  void _loadData() {
+  Future<void> _loadData() async {
     if (_isLoading) return;
 
     setState(() {
       _isLoading = true;
     });
 
-    // 예시로 1초 후 데이터 추가
-    Future.delayed(Duration(seconds: 1), () {
-      cnt += 1;
+    try {
+      // GET 요청
+      final response = await _dio.get(
+          "https://6f765f4d-58a1-466a-b2d3-c6d7c5e74184-00-3s88uoim6pgq9.pike.replit.dev/search/default",
+          queryParameters: {
+            'xpos': _centerLat,
+            'ypos': _centerLng,
+            'page': cnt,
+          });
+      if (response.statusCode == 200) {
+        debugPrint("GET API 응답: ${response.data}");
+      } else {
+        debugPrint("GET API 호출 실패: ${response.statusCode}");
+      }
+
+      // 받아온 데이터로 스크롤뷰 출력
       debugPrint('${cnt}');
       List<Map<String, String>> newItems = List.generate(
         20,
         (index) => {
-          'Name': 'Item ${_items.length + index + 1}',
-          'Description': 'Description for Item ${_items.length + index + 1}',
-          'Distance': '${(index + 1) * 1.5} km',
-          'Lat': '${(index)}',
-          'Lng': '${(index)}',
+          'trailid': response.data['trail'][index]['trail_id'].toString(),
+          'Name': response.data['trail'][index]['trail_name'],
+          'Description': response.data['trail'][index]['path'],
+          'Distance':
+              response.data['trail'][index]['distance'].toStringAsFixed(2) +
+                  'km',
         },
       );
       setState(() {
         _items.addAll(newItems);
         _isLoading = false;
       });
-    });
+      cnt += 1;
+    } catch (e) {
+      debugPrint("GET API 호출 중 오류 발생: $e");
+    }
   }
 
   void _scrollListener() {
@@ -74,11 +103,10 @@ class _ScrollViewPageState extends State<ScrollViewPage> {
                 : SizedBox();
           } else {
             return CustomListItem(
+              trailid: int.parse(_items[index]['trailid']!),
               name: _items[index]['Name'] ?? 'No Name',
               description: _items[index]['Description'] ?? 'No Description',
               distance: _items[index]['Distance'] ?? 'No Distance',
-              lat: _items[index]['Lat'] ?? 'No Lat',
-              lng: _items[index]['Lng'] ?? 'No Lng',
               onTap: () {
                 Navigator.pop(context, _items[index]);
               },
@@ -97,19 +125,17 @@ class _ScrollViewPageState extends State<ScrollViewPage> {
 }
 
 class CustomListItem extends StatelessWidget {
+  final int trailid;
   final String name;
   final String description;
   final String distance;
-  final String lat;
-  final String lng;
   final VoidCallback onTap;
 
   CustomListItem({
+    required this.trailid,
     required this.name,
     required this.description,
     required this.distance,
-    required this.lat,
-    required this.lng,
     required this.onTap,
   });
 
