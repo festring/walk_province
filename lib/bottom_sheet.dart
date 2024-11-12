@@ -1,69 +1,127 @@
 import 'package:flutter/material.dart';
 
-Future<void> showCustomBottomSheet(
-    BuildContext context, Map<String, String> info) async {
-  debugPrint('${info['trailid']} 바텀쉣!!!!!트');
+class CustomBottomSheetContent extends StatefulWidget {
+  final Map<String, String> info;
+  final DraggableScrollableController controller; // Controller를 외부에서 전달받음
+  final ScrollController scrollController;
 
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withOpacity(0.0),
-    builder: (BuildContext context) {
-      return DraggableScrollableSheet(
-        initialChildSize: 0.5, // BottomSheet가 시작될 때 화면의 50% 크기
-        minChildSize: 0.3, // 최소 크기 (30%)
-        maxChildSize: 1.0, // 최대 크기 (100%)
-        builder: (BuildContext context, ScrollController scrollController) {
-          return Container(
-            width: double.infinity, // 화면의 너비를 꽉 채움
-            padding: EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: Colors.white, // BottomSheet의 배경색
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16.0),
-                topRight: Radius.circular(16.0),
+  const CustomBottomSheetContent({
+    Key? key,
+    required this.info,
+    required this.controller,
+    required this.scrollController,
+  }) : super(key: key);
+
+  @override
+  _CustomBottomSheetContentState createState() =>
+      _CustomBottomSheetContentState();
+}
+
+class _CustomBottomSheetContentState extends State<CustomBottomSheetContent> {
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      controller: widget.controller, // 전달받은 Controller를 사용
+      initialChildSize: 0.08,
+      minChildSize: 0.08,
+      maxChildSize: 0.8,
+      builder: (context, scrollController) {
+        return Container(
+          padding: EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16.0),
+              topRight: Radius.circular(16.0),
+            ),
+          ),
+          child: ListView(
+            controller: scrollController,
+            children: [
+              Text(
+                widget.info['name'] ?? 'No Name',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-            ),
-            child: ListView(
-              controller: scrollController,
-              children: [
-                Text(
-                  info['name'] ?? 'No Name',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  info['description'] ?? 'No Description',
-                  style: TextStyle(fontSize: 16),
-                ),
-                SizedBox(height: 16),
-                // 가로 이미지 스크롤뷰 추가
-                SizedBox(
-                  height: 100, // 이미지의 높이
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 5, // 예시 이미지 개수
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: EdgeInsets.only(right: 8.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: Image.network(
-                            'https://picsum.photos/100', // 예시 이미지 URL
-                            width: 100, // 이미지의 너비
-                            fit: BoxFit.cover,
-                          ),
+              SizedBox(height: 16),
+              Text(
+                widget.info['description'] ?? 'No Description',
+                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+              ),
+              SizedBox(height: 16),
+              SizedBox(
+                height: 100,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: 5,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: EdgeInsets.only(right: 8.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8.0),
+                        child: Image.network(
+                          'https://picsum.photos/100',
+                          width: 100,
+                          fit: BoxFit.cover,
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
-              ],
-            ),
-          );
-        },
-      );
-    },
-  );
+              ),
+              SizedBox(height: 24),
+              Text(
+                widget.info['explanation'] ?? 'No Explanation',
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 24),
+              Text(
+                "걸리는 시간",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                widget.info['time'] ?? 'No time',
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 24),
+              Text(
+                "식수 여부",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                widget.info['water'] ?? 'No water',
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 24),
+              Text(
+                "화장실 여부",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                widget.info['toilet'] ?? 'No toilet',
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 24),
+              Text(
+                "주변 매점",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                widget.info['market'] ?? 'No market',
+                style: TextStyle(fontSize: 16),
+              ),
+              SizedBox(height: 24),
+              Text(
+                "주소",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                widget.info['position'] ?? 'No position',
+                style: TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }

@@ -21,7 +21,27 @@ class MapSampleState extends State<MapSample> {
   final MarkerController _markerController = MarkerController();
   final DebounceTimer _debounceTimer = DebounceTimer();
   final RectangleDrawer _rectangleDrawer = RectangleDrawer();
+
+  final DraggableScrollableController _controller =
+      DraggableScrollableController();
+  final ScrollController _scrollController = ScrollController();
+
   final Dio _dio = Dio(); // Dio 인스턴스 생성
+
+  Map<String, String> info = {
+    'name': "temp",
+    'description': "temp",
+    'course_level': "temp",
+    'length': "temp",
+    'explanation': "temp",
+    'time': "temp",
+    'water': "temp",
+    'toilet': "temp",
+    'market': "temp",
+    'position': "temp",
+    'lat': "temp",
+    'lng': "temp",
+  };
 
   LatLng _currentPosition = LatLng(37.7749, -122.4194);
   LatLng _center = LatLng(1, 1);
@@ -155,6 +175,15 @@ class MapSampleState extends State<MapSample> {
 
       print('Received items: $item');
 
+      // 바텀시트의 초기화를 담당스
+      // <<legacy>>
+      // _controller.animateTo(
+      //   0.08,
+      //   duration: Duration(microseconds: 1),
+      //   curve: Curves.linear,
+      // );
+      _controller.reset();
+
       debugPrint('${item['trailid']} 바텀쉣!!!!!트');
 
       try {
@@ -168,7 +197,7 @@ class MapSampleState extends State<MapSample> {
           debugPrint("GET API 호출 실패: ${response.statusCode}");
         }
 
-        Map<String, String> info = {
+        info = {
           'name': response.data['name'],
           'description': response.data['path'],
           'course_level': response.data['course_level'].toString(),
@@ -183,7 +212,8 @@ class MapSampleState extends State<MapSample> {
           'lng': response.data['ypos'].toString(),
         };
 
-        showCustomBottomSheet(context, info);
+        //showCustomBottomSheet(context, info);
+
         try {
           _currentPosition =
               LatLng(double.parse(info['lat']!), double.parse(info['lng']!));
@@ -193,6 +223,8 @@ class MapSampleState extends State<MapSample> {
         } catch (e) {
           debugPrint('위치를 가져오는 중 오류 발생: $e');
         }
+
+        //지도에 마커 표시 포기
       } catch (e) {
         debugPrint("GET API 호출 중 오류 발생: $e");
       }
@@ -289,6 +321,11 @@ class MapSampleState extends State<MapSample> {
                 ),
               ),
             ),
+          ),
+          CustomBottomSheetContent(
+            info: info,
+            controller: _controller,
+            scrollController: _scrollController,
           ),
         ],
       ),
