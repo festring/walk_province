@@ -3,7 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:dio/dio.dart'; // Dio 패키지 import
 
 class ScrollViewPage extends StatefulWidget {
-  LatLng centerPosition;
+  final LatLng centerPosition;
 
   ScrollViewPage({required this.centerPosition});
 
