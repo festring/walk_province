@@ -39,13 +39,12 @@ class _ScrollViewPageState extends State<ScrollViewPage> {
 
     try {
       // GET 요청
-      final response = await _dio.get(
-          "https://6f765f4d-58a1-466a-b2d3-c6d7c5e74184-00-3s88uoim6pgq9.pike.replit.dev/search/default",
-          queryParameters: {
-            'xpos': _centerLat,
-            'ypos': _centerLng,
-            'page': cnt,
-          });
+      final response = await _dio
+          .get("http://211.170.135.177:8000/search/default", queryParameters: {
+        'xpos': _centerLat,
+        'ypos': _centerLng,
+        'page': cnt,
+      });
       if (response.statusCode == 200) {
         debugPrint("GET API 응답: ${response.data}");
       } else {

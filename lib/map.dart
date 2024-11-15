@@ -111,8 +111,7 @@ class MapSampleState extends State<MapSample> {
   Future<void> _fetchData() async {
     try {
       // GET 요청
-      final response = await _dio.get(
-          "https://6f765f4d-58a1-466a-b2d3-c6d7c5e74184-00-3s88uoim6pgq9.pike.replit.dev/get",
+      final response = await _dio.get("http://211.170.135.177:8000/get",
           queryParameters: {'q': 'example query'}); // GET 요청에 'q' 파라미터 추가
       if (response.statusCode == 200) {
         debugPrint("GET API 응답: ${response.data}");
@@ -125,8 +124,7 @@ class MapSampleState extends State<MapSample> {
 
     try {
       // POST 요청
-      final postResponse = await _dio.post(
-          "https://6f765f4d-58a1-466a-b2d3-c6d7c5e74184-00-3s88uoim6pgq9.pike.replit.dev/post",
+      final postResponse = await _dio.post("http://211.170.135.177:8000/post",
           data: {'item': 'example item'}); // POST 요청에 'item' 데이터를 포함
       if (postResponse.statusCode == 200) {
         debugPrint("POST API 응답: ${postResponse.data}");
@@ -192,7 +190,7 @@ class MapSampleState extends State<MapSample> {
       try {
         // GET 요청
         final response = await _dio.get(
-            "https://6f765f4d-58a1-466a-b2d3-c6d7c5e74184-00-3s88uoim6pgq9.pike.replit.dev/track/detail",
+            "http://211.170.135.177:8000/track/detail",
             queryParameters: {'trail_id': int.parse(item['trailid']!)});
         if (response.statusCode == 200) {
           debugPrint("GET API 응답: ${response.data}");

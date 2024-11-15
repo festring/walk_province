@@ -42,7 +42,7 @@ Future<String?> _createUserId() async {
   final dio = Dio();
   try {
     final response = await dio.get(
-      "https://6f765f4d-58a1-466a-b2d3-c6d7c5e74184-00-3s88uoim6pgq9.pike.replit.dev/user/create",
+      "http://211.170.135.177:8000/user/create",
     );
 
     if (response.statusCode == 200 && response.data != null) {
