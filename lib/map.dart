@@ -1,3 +1,6 @@
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -8,9 +11,11 @@ import 'debounce_timer.dart';
 import 'rectangle_drawer.dart';
 import 'bottom_sheet.dart';
 import 'package:dio/dio.dart'; // Dio 패키지 import
+import 'image_handler.dart';
 
 class MapSample extends StatefulWidget {
-  const MapSample({super.key});
+  const MapSample({super.key, required this.userID});
+  final String userID;
 
   @override
   State<MapSample> createState() => MapSampleState();
@@ -25,8 +30,13 @@ class MapSampleState extends State<MapSample> {
   final DraggableScrollableController _controller =
       DraggableScrollableController();
   final ScrollController _scrollController = ScrollController();
+  final ImageHandler _imageHandler = ImageHandler();
 
   final Dio _dio = Dio(); // Dio 인스턴스 생성
+  LatLng _selectedPosition = LatLng(37.42796133580664, -122.085749655962);
+
+  File? _selectedImage;
+  String? _base64Image;
 
   Set<Circle> _circles = {};
 
@@ -211,6 +221,7 @@ class MapSampleState extends State<MapSample> {
         );
 
         info = {
+          'trail_id': response.data['trail_id'].toString(),
           'name': response.data['name'],
           'description': response.data['path'],
           'course_level': response.data['course_level'].toString(),
@@ -245,6 +256,40 @@ class MapSampleState extends State<MapSample> {
       // bottomsheet 띄우기
     } catch (e) {
       debugPrint('현재 위치를 가져오는 중 오류 발생: $e');
+    }
+  }
+
+  // 이미지 받아오기
+  Future<void> _handleImagePick(LatLng pos) async {
+    final result = await _imageHandler.pickImageFromGallery();
+    if (result != null) {
+      setState(() {
+        _selectedImage = result['file'];
+        _base64Image = result['base64'];
+      });
+
+      if (_base64Image != null) {
+        try {
+          print(_base64Image);
+          print(widget.userID);
+          print(_selectedPosition.latitude);
+          final response = await _dio
+              .post("http://211.170.135.177:8000/image/create", data: {
+            "ID": widget.userID,
+            "image": _base64Image,
+            "xpos": _selectedPosition.latitude,
+            "ypos": _selectedPosition.longitude,
+            "tag": "temp"
+          });
+          if (response.statusCode == 200) {
+            debugPrint("POST API 응답: ${response.data}");
+          } else {
+            debugPrint("POST API 호출 실패: ${response.statusCode}");
+          }
+        } catch (e) {
+          debugPrint("POST API 호출 중 오류 발생: $e");
+        }
+      }
     }
   }
 
@@ -290,7 +335,13 @@ class MapSampleState extends State<MapSample> {
             markers: _markerController.singleMarker != null
                 ? {_markerController.singleMarker!}
                 : {},
-            onLongPress: _markerController.addMarker,
+            onLongPress: (LatLng position) {
+              setState(() {
+                _selectedPosition = position; // 길게 누른 위치로 업데이트
+                print(_selectedPosition);
+              });
+              _markerController.addMarker(position);
+            },
             onTap: (LatLng position) {
               _markerController.removeMarker();
             },
@@ -329,7 +380,10 @@ class MapSampleState extends State<MapSample> {
                           ),
                           TextButton(
                             onPressed: () {
+                              print(_selectedPosition);
                               Navigator.of(context).pop();
+                              _handleImagePick(_selectedPosition);
+                              print("좀돼라");
                             },
                             child: const Text("Upload"),
                           ),

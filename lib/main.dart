@@ -12,10 +12,37 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  Future<String?> _getUserID() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('user_id');
+  }
+
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: MapSample(),
+    return MaterialApp(
+      home: FutureBuilder<String?>(
+        future: _getUserID(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // 로딩 중
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          } else if (snapshot.hasError || snapshot.data == null) {
+            // 에러 처리 또는 유저 ID가 없는 경우
+            return const Scaffold(
+              body: Center(
+                child: Text('사용자 ID를 불러오지 못했습니다.'),
+              ),
+            );
+          } else {
+            // 정상적으로 userID 전달
+            return MapSample(userID: snapshot.data!);
+          }
+        },
+      ),
     );
   }
 }
