@@ -41,6 +41,7 @@ class MapSampleState extends State<MapSample> {
   Set<Circle> _circles = {};
 
   Map<String, String> info = {
+    'trail_id': "temp",
     'name': "temp",
     'description': "temp",
     'course_level': "temp",
